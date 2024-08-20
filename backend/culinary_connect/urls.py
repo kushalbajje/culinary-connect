@@ -21,6 +21,6 @@ from users.views import CustomObtainAuthToken
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('recipes.urls')),
-    path('api/token/', CustomObtainAuthToken.as_view(), name='api_token_auth'),
+    path('api/login/', CustomObtainAuthToken.as_view(), name='api_token_auth'),
     path('api/users/', include('users.urls')),
 ]
