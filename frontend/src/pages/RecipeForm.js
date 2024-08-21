@@ -41,10 +41,7 @@ const RecipeForm = () => {
       const fetchRecipe = async () => {
         try {
           const data = await getRecipe(id);
-          setFormData({
-            ...data,
-            ingredients: data.ingredients.join('\n'),
-          });
+          setFormData(data);
         } catch (error) {
           console.error('Failed to fetch recipe:', error);
         }
@@ -60,14 +57,10 @@ const RecipeForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const recipeData = {
-        ...formData,
-        ingredients: formData.ingredients.split('\n').map((item) => item.trim()),
-      };
       if (id) {
-        await updateRecipe(id, recipeData);
+        await updateRecipe(id, formData);
       } else {
-        await createRecipe(recipeData);
+        await createRecipe(formData);
       }
       navigate('/');
     } catch (error) {
@@ -98,7 +91,7 @@ const RecipeForm = () => {
         />
         <TextField
           name="ingredients"
-          label="Ingredients (one per line)"
+          label="Ingredients (comma-separated)"
           value={formData.ingredients}
           onChange={handleChange}
           multiline
@@ -146,9 +139,9 @@ const RecipeForm = () => {
           onChange={handleChange}
           required
         >
-          <MenuItem value="Easy">Easy</MenuItem>
-          <MenuItem value="Medium">Medium</MenuItem>
-          <MenuItem value="Hard">Hard</MenuItem>
+          <MenuItem value="easy">Easy</MenuItem>
+          <MenuItem value="medium">Medium</MenuItem>
+          <MenuItem value="hard">Hard</MenuItem>
         </TextField>
         <TextField
           name="category"

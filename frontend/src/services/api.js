@@ -18,7 +18,7 @@ api.interceptors.request.use((config) => {
 });
 
 export const login = async (username, password) => {
-  const response = await api.post('/auth/login/', { username, password });
+  const response = await api.post('/login/', { username, password });
   return response.data;
 };
 
@@ -28,13 +28,18 @@ export const register = async (username, email, password) => {
 };
 
 export const logout = async () => {
-  const response = await api.post('/auth/logout/');
+  const response = await api.post('/users/logout/');
   return response.data;
 };
 
-export const getAllRecipes = async () => {
-  const response = await api.get('/recipes/');
-  return response.data;
+export const getAllRecipes = async (url = null) => {
+  try {
+    const response = await api.get(url || '/recipes/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching recipes:', error);
+    throw error;
+  }
 };
 
 export const getRecipe = async (id) => {
@@ -57,9 +62,14 @@ export const deleteRecipe = async (id) => {
   return response.data;
 };
 
-export const getUserRecipes = async () => {
-  const response = await api.get('/my-recipes/');
-  return response.data;
+export const getUserRecipes = async (url = null) => {
+  try {
+    const response = await api.get(url || '/my-recipes/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user recipes:', error);
+    throw error;
+  }
 };
 
 export default api;

@@ -57,6 +57,9 @@ const RecipeDetail = () => {
     return <Typography>Loading...</Typography>;
   }
 
+  // Split the ingredients string into an array
+  const ingredientsList = recipe.ingredients.split(',').map(item => item.trim());
+
   return (
     <Container className={classes.container}>
       <Typography variant="h4" component="h1" className={classes.title}>
@@ -66,7 +69,7 @@ const RecipeDetail = () => {
       <div className={classes.section}>
         <Typography variant="h6">Ingredients:</Typography>
         <List>
-          {recipe.ingredients.map((ingredient, index) => (
+          {ingredientsList.map((ingredient, index) => (
             <ListItem key={index}>
               <ListItemText primary={ingredient} />
             </ListItem>

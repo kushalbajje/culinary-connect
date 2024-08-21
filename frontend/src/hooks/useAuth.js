@@ -24,6 +24,7 @@ const useAuth = () => {
 
   const login = async (username, password) => {
     try {
+      console.log(username, password)
       const data = await apiLogin(username, password);
       localStorage.setItem('token', data.token);
       setUser({ token: data.token });
