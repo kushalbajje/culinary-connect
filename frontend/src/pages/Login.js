@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, TextField, Button, Typography } from '@material-ui/core';
+import { Container, TextField, Button, Typography, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { AuthContext } from '../App';
 
@@ -18,6 +18,10 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  errorMessage: {
+    color: theme.palette.error.main,
+    marginTop: theme.spacing(2),
+  },
 }));
 
 const Login = () => {
@@ -26,16 +30,22 @@ const Login = () => {
   const { login } = useContext(AuthContext);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Clear any previous errors
     try {
-      const success = await login(username, password);
-      if (success) {
+      const result = await login(username, password);
+      console.log(result)
+      if (result) {
         navigate('/');
+      } else {
+        setError(result.error || 'Login failed. Please try again.');
       }
     } catch (error) {
       console.error('Login failed:', error);
+      setError('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -82,6 +92,13 @@ const Login = () => {
             Log In
           </Button>
         </form>
+        {error && (
+          <Box mt={2}>
+            <Typography variant="body2" className={classes.errorMessage}>
+              {error}
+            </Typography>
+          </Box>
+        )}
       </div>
     </Container>
   );
