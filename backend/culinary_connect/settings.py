@@ -16,6 +16,15 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+import environ
+import os
+
+# Initialize environment variables
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))  # This will load the .env file
+
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -43,6 +52,7 @@ INSTALLED_APPS = [
     'django_filters',
     'users',
     'corsheaders',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -113,6 +123,18 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# S3 Configuration
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = env('AWS_S3_REGION_NAME', default='us-east-1')
+AWS_S3_FILE_OVERWRITE = env.bool('AWS_S3_FILE_OVERWRITE', default=False)
+AWS_S3_CUSTOM_DOMAIN = env('AWS_S3_CUSTOM_DOMAIN', default=f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com')
+AWS_S3_OBJECT_PARAMETERS = env.dict('AWS_S3_OBJECT_PARAMETERS', default={'CacheControl': 'max-age=86400'})
+AWS_DEFAULT_ACL = env('AWS_DEFAULT_ACL', default='public-read')
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 
 
 REST_FRAMEWORK = {
