@@ -1,8 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
+import os
 
-# Create your models here.
 class Recipe(models.Model):
     DIFFICULTY_CHOICES = [
         ('easy', 'Easy'),
@@ -29,6 +29,12 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_public = models.BooleanField(default=True)
-    image_url = models.URLField(max_length=1000, blank=True, null=True)
+    image = models.ImageField(upload_to='recipe_images/', blank=True, null=True) 
+
     def __str__(self):
         return self.title
+
+    def get_image_url(self):
+        if self.image:
+            return self.image.url
+        return None
