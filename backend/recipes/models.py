@@ -29,7 +29,6 @@ class Recipe(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_public = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='recipe_images/', null=True, blank=True)
     image_url = models.URLField(max_length=1000, blank=True, null=True)
     def __str__(self):
         return self.title
