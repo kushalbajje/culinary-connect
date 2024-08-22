@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button, InputBase } from '@material-ui/core';
+import { AppBar, Toolbar, Typography, Button, IconButton, Hidden, Drawer, List, ListItem, ListItemText } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import SearchIcon from '@material-ui/icons/Search';
+import MenuIcon from '@material-ui/icons/Menu';
 import { AuthContext } from '../App';
 
 const useStyles = makeStyles((theme) => ({
@@ -11,39 +11,14 @@ const useStyles = makeStyles((theme) => ({
     },
     title: {
         flexGrow: 1,
+        color: 'inherit', // Ensure the title text color matches the AppBar text color
+        textDecoration: 'none', // Remove underline from link
     },
-    search: {
-        position: 'relative',
-        borderRadius: theme.shape.borderRadius,
-        backgroundColor: theme.palette.common.white,
+    menuButton: {
         marginRight: theme.spacing(2),
-        marginLeft: 0,
-        width: '100%',
-        [theme.breakpoints.up('sm')]: {
-            marginLeft: theme.spacing(3),
-            width: 'auto',
-        },
     },
-    searchIcon: {
-        padding: theme.spacing(0, 2),
-        height: '100%',
-        position: 'absolute',
-        pointerEvents: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    inputRoot: {
-        color: 'inherit',
-    },
-    inputInput: {
-        padding: theme.spacing(1, 1, 1, 0),
-        paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-        transition: theme.transitions.create('width'),
-        width: '100%',
-        [theme.breakpoints.up('md')]: {
-            width: '20ch',
-        },
+    list: {
+        width: 250,
     },
 }));
 
@@ -51,12 +26,13 @@ const Navbar = () => {
     const classes = useStyles();
     const navigate = useNavigate();
     const { user, logout } = useContext(AuthContext);
-    const [searchTerm, setSearchTerm] = React.useState('');
+    const [drawerOpen, setDrawerOpen] = React.useState(false);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        // Implement search functionality
-        console.log('Searching for:', searchTerm);
+    const toggleDrawer = (open) => (event) => {
+        if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+            return;
+        }
+        setDrawerOpen(open);
     };
 
     const handleLogout = async () => {
@@ -64,59 +40,100 @@ const Navbar = () => {
         navigate('/');
     };
 
+    const drawer = (
+        <div
+            className={classes.list}
+            role="presentation"
+            onClick={toggleDrawer(false)}
+            onKeyDown={toggleDrawer(false)}
+        >
+            <List>
+                <ListItem button component={Link} to="/">
+                    <ListItemText primary="Home" />
+                </ListItem>
+                {user ? (
+                    <>
+                        <ListItem button component={Link} to="/create-recipe">
+                            <ListItemText primary="Create Recipe" />
+                        </ListItem>
+                        <ListItem button component={Link} to="/profile">
+                            <ListItemText primary="Profile" />
+                        </ListItem>
+                        <ListItem button onClick={handleLogout}>
+                            <ListItemText primary="Logout" />
+                        </ListItem>
+                    </>
+                ) : (
+                    <>
+                        <ListItem button component={Link} to="/login">
+                            <ListItemText primary="Login" />
+                        </ListItem>
+                        <ListItem button component={Link} to="/register">
+                            <ListItemText primary="Register" />
+                        </ListItem>
+                    </>
+                )}
+            </List>
+        </div>
+    );
+
     return (
         <div className={classes.root}>
             <AppBar position="static">
                 <Toolbar>
-                    <Typography variant="h6" className={classes.title}>
-                        CulinaryConnect
+                    <Hidden smUp>
+                        <IconButton
+                            edge="start"
+                            className={classes.menuButton}
+                            color="inherit"
+                            aria-label="menu"
+                            onClick={toggleDrawer(true)}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    </Hidden>
+                    <Typography
+                        variant="h4"
+                        component={Link}
+                        to="/"
+                        className={classes.title}
+                    >
+                        Culinary Connect
                     </Typography>
-                    <div className={classes.search}>
-                        <div className={classes.searchIcon}>
-                            <SearchIcon />
-                        </div>
-                        <form onSubmit={handleSearch}>
-                            <InputBase
-                                placeholder="Search recipes…"
-                                classes={{
-                                    root: classes.inputRoot,
-                                    input: classes.inputInput,
-                                }}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </form>
-                    </div>
-                    <Button color="inherit" component={Link} to="/">
-                        Home
-                    </Button>
-                    {user ? (
-                        <>
-                            <Button color="inherit" component={Link} to="/create-recipe">
-                                Create Recipe
-                            </Button>
-                            <Button color="inherit" component={Link} to="/profile">
-                                Profile
-                            </Button>
-                            <Button color="inherit" onClick={handleLogout}>
-                                Logout
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <Button color="inherit" component={Link} to="/login">
-                                Login
-                            </Button>
-                            <Button color="inherit" component={Link} to="/register">
-                                Register
-                            </Button>
-                        </>
-                    )}
+                    <Hidden xsDown>
+                        <Button color="inherit" component={Link} to="/">
+                            Home
+                        </Button>
+                        {user ? (
+                            <>
+                                <Button color="inherit" component={Link} to="/create-recipe">
+                                    Create Recipe
+                                </Button>
+                                <Button color="inherit" component={Link} to="/profile">
+                                    Profile
+                                </Button>
+                                <Button color="inherit" onClick={handleLogout}>
+                                    Logout
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button color="inherit" component={Link} to="/login">
+                                    Login
+                                </Button>
+                                <Button color="inherit" component={Link} to="/register">
+                                    Register
+                                </Button>
+                            </>
+                        )}
+                    </Hidden>
                 </Toolbar>
             </AppBar>
+            <Drawer open={drawerOpen} onClose={toggleDrawer(false)}>
+                {drawer}
+            </Drawer>
         </div>
     );
 };
-
 
 export default Navbar;

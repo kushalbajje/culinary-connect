@@ -24,10 +24,16 @@ const Register = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const { register } = useContext(AuthContext);
+
+  // State variables for the additional fields
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [bio, setBio] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +42,15 @@ const Register = () => {
       return;
     }
     try {
-      await register(username, email, password);
+      await register({
+        username,
+        email,
+        password,
+        first_name: firstName,
+        last_name: lastName,
+        bio,
+        date_of_birth: dateOfBirth,
+      });
       navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error);
@@ -74,6 +88,58 @@ const Register = () => {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="firstName"
+            label="First Name"
+            id="firstName"
+            autoComplete="given-name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="lastName"
+            label="Last Name"
+            id="lastName"
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            fullWidth
+            name="bio"
+            label="Bio"
+            id="bio"
+            autoComplete="bio"
+            multiline
+            rows={3}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="dateOfBirth"
+            label="Date of Birth"
+            type="date"
+            id="dateOfBirth"
+            InputLabelProps={{
+              shrink: true,
+            }}
+            value={dateOfBirth}
+            onChange={(e) => setDateOfBirth(e.target.value)}
           />
           <TextField
             variant="outlined"

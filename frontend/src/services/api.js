@@ -1,16 +1,16 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'http://localhost:8000/api';  // Replace with your Django API URL
+const API_URL = "http://localhost:8000/api"; // Replace with your Django API URL
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Token ${token}`;
   }
@@ -18,26 +18,26 @@ api.interceptors.request.use((config) => {
 });
 
 export const login = async (username, password) => {
-  const response = await api.post('/login/', { username, password });
+  const response = await api.post("/login/", { username, password });
   return response.data;
 };
 
-export const register = async (username, email, password) => {
-  const response = await api.post('/auth/register/', { username, email, password });
+export const register = async (recipeData) => {
+  const response = await api.post("/users/register/", recipeData.username);
   return response.data;
 };
 
 export const logout = async () => {
-  const response = await api.post('/users/logout/');
+  const response = await api.post("/users/logout/");
   return response.data;
 };
 
 export const getAllRecipes = async (url = null) => {
   try {
-    const response = await api.get(url || '/recipes/');
+    const response = await api.get(url || "/recipes/");
     return response.data;
   } catch (error) {
-    console.error('Error fetching recipes:', error);
+    console.error("Error fetching recipes:", error);
     throw error;
   }
 };
@@ -48,12 +48,27 @@ export const getRecipe = async (id) => {
 };
 
 export const createRecipe = async (recipeData) => {
-  const response = await api.post('/recipes/', recipeData);
+  
+  const token = localStorage.getItem("token");
+  const response = await api.post("/recipes/", recipeData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+
+      Authorization: `Token ${token}`,
+    },
+  });
   return response.data;
 };
 
 export const updateRecipe = async (id, recipeData) => {
-  const response = await api.put(`/recipes/${id}/`, recipeData);
+  const token = localStorage.getItem("token");
+  const response = await api.put(`/recipes/${id}/`, recipeData,{
+    headers: {
+      "Content-Type": "multipart/form-data",
+
+      Authorization: `Token ${token}`,
+    },
+  });
   return response.data;
 };
 
@@ -64,10 +79,10 @@ export const deleteRecipe = async (id) => {
 
 export const getUserRecipes = async (url = null) => {
   try {
-    const response = await api.get(url || '/my-recipes/');
+    const response = await api.get(url || "/my-recipes/");
     return response.data;
   } catch (error) {
-    console.error('Error fetching user recipes:', error);
+    console.error("Error fetching user recipes:", error);
     throw error;
   }
 };

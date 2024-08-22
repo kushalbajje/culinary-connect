@@ -34,6 +34,7 @@ const RecipeForm = () => {
     difficulty: '',
     category: '',
     cuisine: '',
+    image: null,  // Add image to the form data state
   });
 
   useEffect(() => {
@@ -51,16 +52,25 @@ const RecipeForm = () => {
   }, [id]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (e.target.name === 'image') {
+      setFormData({ ...formData, image: e.target.files[0] });
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const recipeData = new FormData();
+    for (const key in formData) {
+      recipeData.append(key, formData[key]);
+    }
+
     try {
       if (id) {
-        await updateRecipe(id, formData);
+        await updateRecipe(id, recipeData);
       } else {
-        await createRecipe(formData);
+        await createRecipe(recipeData);
       }
       navigate('/');
     } catch (error) {
@@ -157,6 +167,20 @@ const RecipeForm = () => {
           onChange={handleChange}
           required
         />
+        <input
+          accept="image/*"
+          style={{ display: 'none' }}
+          id="raised-button-file"
+          type="file"
+          name="image"
+          onChange={handleChange}
+        />
+        <label htmlFor="raised-button-file">
+          <Button variant="contained" color="primary" component="span">
+            Upload Image
+          </Button>
+          {formData.image && <Typography>{formData.image.name}</Typography>}
+        </label>
         <Button type="submit" variant="contained" color="primary" className={classes.submit}>
           {id ? 'Update Recipe' : 'Create Recipe'}
         </Button>
