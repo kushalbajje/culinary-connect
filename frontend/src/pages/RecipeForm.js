@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, TextField, Button, Typography, MenuItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { createRecipe, updateRecipe, getRecipe } from '../services/api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -34,8 +36,9 @@ const RecipeForm = () => {
     difficulty: '',
     category: '',
     cuisine: '',
-    image: null,  // Add image to the form data state
+    image: null,
   });
+  const [formIsValid, setFormIsValid] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -50,6 +53,21 @@ const RecipeForm = () => {
       fetchRecipe();
     }
   }, [id]);
+
+  useEffect(() => {
+    const checkFormValidity = () => {
+      const {
+        title, description, ingredients, instructions, preparation_time,
+        cooking_time, servings, difficulty, category, cuisine
+      } = formData;
+
+      const isValid = title && ingredients && instructions && preparation_time && description &&
+                      cooking_time && servings && difficulty && category && cuisine;
+      setFormIsValid(isValid);
+    };
+
+    checkFormValidity();
+  }, [formData]);
 
   const handleChange = (e) => {
     if (e.target.name === 'image') {
@@ -69,12 +87,17 @@ const RecipeForm = () => {
     try {
       if (id) {
         await updateRecipe(id, recipeData);
+        toast.success('Recipe updated successfully!');
       } else {
         await createRecipe(recipeData);
+        toast.success('Recipe created successfully!');
       }
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);  // Redirect after a short delay to allow the toast to be seen
     } catch (error) {
       console.error('Failed to save recipe:', error);
+      toast.error('Failed to save recipe!');
     }
   };
 
@@ -97,7 +120,8 @@ const RecipeForm = () => {
           value={formData.description}
           onChange={handleChange}
           multiline
-          rows={3}
+          rows={2}
+          required
         />
         <TextField
           name="ingredients"
@@ -105,7 +129,7 @@ const RecipeForm = () => {
           value={formData.ingredients}
           onChange={handleChange}
           multiline
-          rows={5}
+          rows={2}
           required
         />
         <TextField
@@ -114,7 +138,7 @@ const RecipeForm = () => {
           value={formData.instructions}
           onChange={handleChange}
           multiline
-          rows={5}
+          rows={3}
           required
         />
         <TextField
@@ -181,10 +205,17 @@ const RecipeForm = () => {
           </Button>
           {formData.image && <Typography>{formData.image.name}</Typography>}
         </label>
-        <Button type="submit" variant="contained" color="primary" className={classes.submit}>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          className={classes.submit}
+          disabled={!formIsValid}
+        >
           {id ? 'Update Recipe' : 'Create Recipe'}
         </Button>
       </form>
+      <ToastContainer />
     </Container>
   );
 };
