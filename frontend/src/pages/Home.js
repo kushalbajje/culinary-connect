@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, CircularProgress, Button } from '@material-ui/core';
+import React, { useState, useEffect, useRef } from 'react';
+import { Container, Grid, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import RecipeCard from '../components/RecipeCard';
 import { getAllRecipes } from '../services/api';
@@ -23,6 +23,10 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     marginTop: theme.spacing(4),
   },
+  noDataContainer: {
+    textAlign: 'center',
+    marginTop: theme.spacing(10),
+  },
 }));
 
 const Home = () => {
@@ -35,6 +39,7 @@ const Home = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const loadMoreRef = useRef();
 
   const fetchRecipes = async (url = null) => {
     setLoading(true);
@@ -53,9 +58,46 @@ const Home = () => {
     fetchRecipes();
   }, []);
 
-  const handleLoadMore = () => {
-    if (recipesData.next) {
-      fetchRecipes(recipesData.next);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && recipesData.next) {
+          handleLoadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 1.0,
+      }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
+  }, [recipesData.next]);
+
+  const handleLoadMore = async () => {
+    if (recipesData.next && !loading) {
+      try {
+        setLoading(true);
+        const data = await getAllRecipes(recipesData.next);
+        setRecipesData((prevData) => ({
+          ...data,
+          results: [...prevData.results, ...data.results],
+        }));
+      } catch (error) {
+        console.error('Failed to fetch recipes:', error);
+        setError('Failed to load more recipes. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -83,25 +125,26 @@ const Home = () => {
         Discover Delicious Recipes
       </Typography>
       {recipesData.results.length === 0 ? (
-        <Typography variant="body1" align="center">
-          No recipes found. Be the first to add a recipe!
-        </Typography>
+        <div className={classes.noDataContainer}>
+          <Typography variant="h6" color="textSecondary">
+            No recipes found.
+          </Typography>
+          <Typography variant="body1" color="textSecondary">
+            Be the first to add a recipe or try refreshing the page.
+          </Typography>
+        </div>
       ) : (
         <>
           <Grid container spacing={4}>
             {recipesData.results.map((recipe) => (
-              <Grid item key={recipe.id} xs={12} sm={6} md={4}>
+              <Grid item key={recipe.id} xs={12} sm={6} md={6}>
                 <RecipeCard recipe={recipe} />
               </Grid>
             ))}
           </Grid>
-          {recipesData.next && (
-            <div className={classes.paginationContainer}>
-              <Button variant="contained" color="primary" onClick={handleLoadMore} disabled={loading}>
-                {loading ? 'Loading...' : 'Load More'}
-              </Button>
-            </div>
-          )}
+          <div ref={loadMoreRef} className={classes.paginationContainer}>
+            {loading && <CircularProgress />}
+          </div>
         </>
       )}
     </Container>

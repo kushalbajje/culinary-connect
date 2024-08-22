@@ -5,10 +5,16 @@ import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
   root: {
-    maxWidth: 345,
+    maxWidth: '100%',  // Make sure it takes full width within its container
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Add a box shadow
+    transition: '0.3s',  // Smooth transition for hover effect
+    '&:hover': {
+      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)',  // Increase shadow on hover
+      transform: 'translateY(-4px)',  // Move the card upwards on hover
+    },
   },
   media: {
-    height: 140,
+    height: 300,
   },
 });
 
@@ -20,7 +26,7 @@ const RecipeCard = ({ recipe }) => {
       <CardActionArea component={RouterLink} to={`/recipe/${recipe.id}`}>
         <CardMedia
           className={classes.media}
-          image={recipe.image || 'https://via.placeholder.com/345x140.png?text=No+Image'}
+          image={recipe.image_url || 'https://via.placeholder.com/345x140.png?text=No+Image'}
           title={recipe.title}
         />
         <CardContent>
