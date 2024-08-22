@@ -12,6 +12,8 @@ import {
 import { makeStyles } from "@material-ui/core/styles";
 import { getRecipe, deleteRecipe } from "../services/api";
 import useAuth from "../hooks/useAuth"; // Import the useAuth hook
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -100,11 +102,16 @@ const RecipeDetail = () => {
   const handleDelete = async () => {
     try {
       await deleteRecipe(id);
-      navigate("/");
+      toast.success("Recipe deleted successfully!");
+      setTimeout(() => {
+        navigate("/profile");
+      }, 2000);  // Delay navigation to allow the toast to be seen
     } catch (error) {
       console.error("Failed to delete recipe:", error);
+      toast.error("Failed to delete recipe. Please try again.");
     }
   };
+  
 
   const handleGoBack = () => {
     navigate(-1); // Go back to the previous page
@@ -202,6 +209,7 @@ const RecipeDetail = () => {
           )}
         </div>
       </div>
+      <ToastContainer />
     </Container>
   );
 };

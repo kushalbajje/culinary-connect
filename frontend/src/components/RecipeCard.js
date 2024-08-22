@@ -26,7 +26,7 @@ const RecipeCard = ({ recipe }) => {
       <CardActionArea component={RouterLink} to={`/recipe/${recipe.id}`}>
         <CardMedia
           className={classes.media}
-          image={recipe.image_url || 'https://via.placeholder.com/345x140.png?text=No+Image'}
+          image={recipe.image || 'https://via.placeholder.com/345x140.png?text=No+Image'}
           title={recipe.title}
         />
         <CardContent>

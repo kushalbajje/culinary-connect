@@ -37,7 +37,7 @@ const Login = () => {
     setError(''); // Clear any previous errors
     try {
       const result = await login(username, password);
-     
+      console.log(result)
       if (result) {
         navigate('/');
       } else {

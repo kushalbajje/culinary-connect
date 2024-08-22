@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Container, Grid, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import RecipeCard from '../components/RecipeCard';
@@ -41,22 +41,35 @@ const Home = () => {
   const [error, setError] = useState(null);
   const loadMoreRef = useRef();
 
-  const fetchRecipes = async (url = null) => {
+  const fetchRecipes = useCallback(async (url = null) => {
     setLoading(true);
     try {
       const data = await getAllRecipes(url);
-      setRecipesData(data);
+      setRecipesData((prevData) => ({
+        ...data,
+        results: url
+          ? [...prevData.results, ...data.results.filter(
+              (newRecipe) => !prevData.results.some((recipe) => recipe.id === newRecipe.id)
+            )]
+          : data.results,
+      }));
     } catch (error) {
       console.error('Failed to fetch recipes:', error);
       setError('Failed to load recipes. Please try again later.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchRecipes();
-  }, []);
+  }, [fetchRecipes]);
+
+  const handleLoadMore = useCallback(() => {
+    if (recipesData.next && !loading) {
+      fetchRecipes(recipesData.next);
+    }
+  }, [recipesData.next, loading, fetchRecipes]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -81,25 +94,7 @@ const Home = () => {
         observer.unobserve(loadMoreRef.current);
       }
     };
-  }, [recipesData.next]);
-
-  const handleLoadMore = async () => {
-    if (recipesData.next && !loading) {
-      try {
-        setLoading(true);
-        const data = await getAllRecipes(recipesData.next);
-        setRecipesData((prevData) => ({
-          ...data,
-          results: [...prevData.results, ...data.results],
-        }));
-      } catch (error) {
-        console.error('Failed to fetch recipes:', error);
-        setError('Failed to load more recipes. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
+  }, [recipesData.next, handleLoadMore]);
 
   if (loading && recipesData.results.length === 0) {
     return (
