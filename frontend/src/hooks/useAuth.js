@@ -23,16 +23,28 @@ const useAuth = () => {
 
   const login = async (username, password) => {
     try {
-      const data = await apiLogin(username, password);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('username', username);
-      setUser({ token: data.token, username });
+      const response = await apiLogin(username, password);  // Assume apiLogin is the function that makes the API call
+     
+  
+      // Extracting the data from the response
+      const { token, user_id, email } = response.data;
+  
+      // Storing the token and additional user information in local storage
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', username);  // Username might still be useful to store
+      localStorage.setItem('user_id', user_id);
+      localStorage.setItem('email', email);
+  
+      // Setting user state
+      setUser({ token, username, user_id, email });
+  
       return true;
     } catch (error) {
       console.error('Login failed:', error);
       return false;
     }
   };
+  
 
   const logout = async () => {
     try {

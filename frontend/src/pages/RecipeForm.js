@@ -19,6 +19,11 @@ const useStyles = makeStyles((theme) => ({
   submit: {
     marginTop: theme.spacing(2),
   },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: theme.spacing(2),
+  },
 }));
 
 const RecipeForm = () => {
@@ -58,11 +63,11 @@ const RecipeForm = () => {
     const checkFormValidity = () => {
       const {
         title, description, ingredients, instructions, preparation_time,
-        cooking_time, servings, difficulty, category, cuisine
+        cooking_time, servings, difficulty, category, cuisine, image
       } = formData;
 
       const isValid = title && ingredients && instructions && preparation_time && description &&
-                      cooking_time && servings && difficulty && category && cuisine;
+                      cooking_time && servings && difficulty && category && cuisine && image;
       setFormIsValid(isValid);
     };
 
@@ -99,6 +104,10 @@ const RecipeForm = () => {
       console.error('Failed to save recipe:', error);
       toast.error('Failed to save recipe!');
     }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);  // Go back to the previous page
   };
 
   return (
@@ -205,15 +214,27 @@ const RecipeForm = () => {
           </Button>
           {formData.image && <Typography>{formData.image.name}</Typography>}
         </label>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          className={classes.submit}
-          disabled={!formIsValid}
-        >
-          {id ? 'Update Recipe' : 'Create Recipe'}
-        </Button>
+        <div className={classes.buttonContainer}>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            className={classes.submit}
+            disabled={!formIsValid}
+          >
+            {id ? 'Update Recipe' : 'Create Recipe'}
+          </Button>
+          {id && (
+            <Button
+              variant="contained"
+              color="default"
+              onClick={handleCancel}
+              className={classes.submit}
+            >
+              Cancel
+            </Button>
+          )}
+        </div>
       </form>
       <ToastContainer />
     </Container>
