@@ -98,7 +98,7 @@ Before setting up the project, ensure you have the following installed:
 
 2. **Install Frontend Dependencies**
    ```bash
-   npm install
+   npm install --force
    ```
 
 3. **Run the Frontend Development Server**
