@@ -11,8 +11,6 @@ def upload_to_s3(file, file_name):
     )
     
     try:
-        # Determine the content type based on the file extension
-        content_type = 'image/jpeg' 
         
         # Set additional upload parameters, including Content-Disposition and Content-Type
         s3.upload_fileobj(
@@ -21,7 +19,6 @@ def upload_to_s3(file, file_name):
             file_name,
             ExtraArgs={
                 'ContentDisposition': 'inline',
-                'ContentType': content_type
             }
         )
         

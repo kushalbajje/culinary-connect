@@ -8,7 +8,8 @@ from .serializers import RecipeSerializer
 from django.contrib.auth import get_user_model
 from .utils import upload_to_s3
 from rest_framework.views import APIView
-
+from django.core.files.base import ContentFile
+import base64
 User = get_user_model()
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
@@ -29,11 +30,25 @@ class RecipeListCreateView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         image = self.request.data.get('image')
+        image_url = None
         if image:
-            image_url = upload_to_s3(image, f"recipe_images/{image.name}")
-            serializer.save(author=self.request.user, image_url=image_url)
-        else:
-            serializer.save(author=self.request.user)
+            try:
+                if isinstance(image, str) and image.startswith('data:image'):
+                    # Base64 encoded image - decode it
+                    format, imgstr = image.split(';base64,')
+                    ext = format.split('/')[-1]
+                    data = ContentFile(base64.b64decode(imgstr), name=f'temp.{ext}')
+                else:
+                    # Regular file upload
+                    data = image
+
+                # Upload to S3
+                image_url = upload_to_s3(data, f"recipe_images/{data.name}")
+            except Exception as e:
+                print(f"Error uploading image: {str(e)}")
+                # You might want to raise an exception here or handle it as per your requirement
+
+        serializer.save(author=self.request.user, image_url=image_url)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -54,6 +69,28 @@ class RecipeListCreateView(generics.ListCreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class RecipeImageUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
+
+    def post(self, request, pk):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        self.check_object_permissions(request, recipe)
+        
+        image = request.data.get('image')
+        if image:
+            try:
+                image_url = upload_to_s3(image, f"recipe_images/{image.name}")
+                if image_url:
+                    recipe.image_url = image_url
+                    recipe.save()
+                    return Response({'message': 'Image uploaded successfully', 'image_url': image_url}, status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'Failed to upload image'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except Exception as e:
+                return Response({'message': f'Error uploading image: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'message': 'No image provided'}, status=status.HTTP_400_BAD_REQUEST)
 
 class RecipeDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Recipe.objects.all()
@@ -101,21 +138,3 @@ class PublicUserRecipeListView(generics.ListAPIView):
         user = get_object_or_404(User, username=username)
         return Recipe.objects.filter(author=user, is_public=True)
 
-class RecipeImageUploadView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [permissions.IsAuthenticated, IsAuthorOrReadOnly]
-
-    def post(self, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        self.check_object_permissions(request, recipe)
-        
-        image = request.data.get('image')
-        if image:
-            image_url = upload_to_s3(image, f"recipe_images/{image.name}")
-            if image_url:
-                recipe.image_url = image_url
-                recipe.save()
-                return Response({'message': 'Image uploaded successfully', 'image_url': image_url}, status=status.HTTP_200_OK)
-            else:
-                return Response({'message': 'Failed to upload image'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response({'message': 'No image provided'}, status=status.HTTP_400_BAD_REQUEST)
